@@ -193,9 +193,62 @@ ax.set_xlim(-1e-6,4e-5)
 ax.scatter(N2,z[:-1] ,marker='o',s=12,\
                    color='b',
                     alpha=.7,zorder=10)
-plt.title("Argo Brunt-Vaisala frequency (N^2) with Depth",size=16)
+plt.title("Argo Brunt-Vaisala frequency with Depth",size=16)
 plt.show()
 
 # Based on the figures you just made, discuss this profile a bit. Is the stratification dominated by salinity or temperature? Is it typical of the global ocean?
 print"The homogenous mixed-layer occurs in the first ~100 m, followed by a steep decrease in each profile at the thermocline/halocline.\nConvection is dominated by the stratified salinity (steady gradient followed by abrupt halocline), whereas temperature is homogenous until the thermocline.\
 \nThis behavior are not unique to the Southern Ocean, but rather emblematic of the vertical profile of the global ocean." 
+
+"""****************************************************************************
+4) Sensible heat flux
+****************************************************************************"""
+# Params
+u10 = 10    # m/s wind speed at 10m
+u   = 0     # m/s current speed in Ocean surf
+T10 = 18    # C temp at 10m
+T   = 20    # C temp at Ocean surf (note units can be K since difference is taken)
+Ch  = 10e-3 #  sepecific heat of seawater
+CpA = 1030  # J kg-1 K-1 specific heat of air
+pA  = 1.3   # kg m-3 density of air
+
+# Calcluate sensible heat w/ units: J m-2 s-1 = W m-2
+Qs = pA*CpA*Ch*abs(u10-u)*(T10-T)
+
+# Params
+h   = 50    # m MLD
+rho0= 1027  # kg m-3 density of seawater
+s2d = 86400 # conversion from seconds -> day
+
+# Calculate the heat flux units: W/ J K-1 = K s-1
+dT = (Qs/(h*CpA*rho0))*s2d
+
+import numpy as np
+# Params
+T10 = 18
+T   = 20
+day = 0
+Tp  = T-T10 # C sea-air temperature gradient
+TpList = np.zeros(23)
+TpList[0] = Tp # List of sea-air temperature gradient for plotting...
+
+while(Tp > .01):
+    Qs = pA*CpA*Ch*abs(u10-u)*(T10-T) 
+    dT = (Qs/(h*CpA*rho0))*s2d
+    T = T+dT
+    Tp = T-T10
+    print "day",day,":\nthe heat flux is",dT,"degrees/day \nthe temp gradient is",Tp
+    TpList[day] = T-T10  #book-keeping...  
+    day=day+1
+
+"""
+assuming that wind and current velocity remain uncahnged, the temperature gradient
+becomes weaker day-by-day as the heat flux is dependent on the senible heat, which
+is a function of the temperature gradient.
+
+The cooling rate is positively coorelated to the temperature gradient.
+"""
+
+"""****************************************************************************
+5) Evaporation and Latent Heat Flux
+****************************************************************************"""
