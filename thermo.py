@@ -62,7 +62,7 @@ T2  =  0.0
 S1  = 33.0
 S2  = 33.2
 
-# Pressure (dbar)
+# P (Pressure, dbar))
 p1  = 0
 p2  = 20
 pr  = 0 #reference pressure at the surface
@@ -131,70 +131,73 @@ psal = argo.psal[0]
 # in-situ temperature
 t = argo.temp[0]
 
-pr = 0
 
-
-print"3.4 Absolute salinity"
+print"3.4 Absolute salinity (g/lg)"
 Sa=sw.SA_from_SP(psal,p,lon,lat)
 print Sa
-print"3.5 Conservative temperature"
+print"3.5 Conservative temperature (C)"
 Tc = sw.CT_from_t(Sa,t,p)
 print Tc
-print"3.6 Water column height"
+print"3.6 Water column height (m)"
 z=sw.z_from_p(p,lat)
 print z
 
-# Then make plots of SA and Tc vs z. Include axis labels and titles.
-fig = plt.figure(figsize=(6,8))     
-ax = fig.add_subplot(111)    
-ax.set_xlabel('Absolute Salinity [psu]',size=14)
-ax.set_ylabel('Water column height [m]',size=14)
-ax.set_ylim((-1850,0))
+# Then make plots of SA and Tc vs z. Include axis labels and titles. 
+lblSize = 10
+fig,ax = plt.subplots(ncols=2,figsize=(8,6))   
+ax[0].set_xlabel('Absolute Salinity [g/kg]',size=lblSize )
+ax[0].set_ylabel('Water column height [m]',size=lblSize )
+#ax[0].set_ylim((-1850,0))
 #ax.set_ylim(-20,1) 
-ax.scatter(Sa,z ,marker='o',s=12,\
-                   color='r',
+ax[0].scatter(Sa,z ,marker='o',s=12,\
+                   color='g',
                     alpha=.7,zorder=10)
-plt.title("Argo Absolute Salinity with Depth",size=16)
-plt.show()
 
-fig = plt.figure(figsize=(6,8))     
-ax = fig.add_subplot(111)    
-ax.set_xlabel('Conservative Temperature [C]',size=14)
-ax.set_ylabel('Water column height [m]',size=14)
-ax.set_ylim(-1850,0)
+ax[0].plot(Sa,z,'g')
+ax[0].set_title(r'$S_A$',size=16)
+
+    
+ax[1].set_xlabel(r'Conservative Temperature [$^\circ$C]',size=lblSize)
+ax[1].set_ylabel('Water column height [m]',size=lblSize)
+#ax[1].set_ylim(-1850,0)
 #ax.set_ylim(-20,1) 
-ax.scatter(Tc,z ,marker='o',s=12,\
-                   color='b',
+ax[1].scatter(Tc,z ,marker='o',s=12,\
+                   color='g',
                     alpha=.7,zorder=10)
-plt.title("Argo Conservative Temp with Depth",size=16)
-plt.show()
+ax[1].plot(Tc,z,'g')
+ax[1].set_title(r'$\Theta$',size=16)
+[a.set_ylim([-1850,0]) for a in ax]
+plt.tight_layout()
+
+
+
 # Finally, use gsw to calculate rhosurf (surface potential density) and N2 (buoyancy frequency). 
 rh0 =  sw.rho_CT_exact(Sa,Tc,p[0])
 N2,pMid  =  sw.Nsquared(Sa,Tc,p,lat)
 
-fig = plt.figure(figsize=(6,8))     
-ax = fig.add_subplot(111)    
-ax.set_xlabel('Surface potential density',size=14)
-ax.set_ylabel('Water column height [m]',size=14)
-ax.set_ylim(-1850,0)
-#ax.set_ylim(-20,1) 
-ax.scatter(rh0,z ,marker='o',s=12,\
+fig,ax = plt.subplots(ncols=2,figsize=(8,6))  
+ax[0].set_xlabel('Surface potential density[kg m$^{-3}$]',size=lblSize)
+ax[0].set_ylabel('Water column height [m]',size=lblSize)
+ax[0].scatter(rh0,z ,marker='o',s=12,\
                    color='b',
                     alpha=.7,zorder=10)
-plt.title("Argo Surface Potential Density with Depth",size=16)
-plt.show()
+ax[0].plot(rh0,z,'b')
+ax[0].set_title(r'$\sigma_0$',size=16)
 
-fig = plt.figure(figsize=(6,8))     
-ax = fig.add_subplot(111)    
-ax.set_xlabel('Buoyancy frequency [s-2]',size=14)
-ax.set_ylabel('Water column height [m]',size=14)
-ax.set_ylim(-1850,0)
-ax.set_xlim(-1e-6,4e-5) 
-ax.scatter(N2,z[:-1] ,marker='o',s=12,\
+  
+ax[1].set_xlabel('Buoyancy frequency [s$^{-2}$]',size=lblSize)
+ax[1].set_ylabel('Water column height [m]',size=lblSize)
+#ax[3].set_ylim(-1850,0)
+ax[1].set_xlim(-1e-6,4e-5) 
+ax[1].scatter(N2,z[:-1] ,marker='o',s=12,\
                    color='b',
                     alpha=.7,zorder=10)
-plt.title("Argo Brunt-Vaisala frequency with Depth",size=16)
-plt.show()
+ax[1].plot(N2,z[:-1],'b')
+ax[1].set_title(r'$N^{2}$',size=16)
+#ax[0].set_ylim((-1850,0))
+
+[a.set_ylim([-1850,0]) for a in ax]
+plt.tight_layout()
 
 # Based on the figures you just made, discuss this profile a bit. Is the stratification dominated by salinity or temperature? Is it typical of the global ocean?
 print"The homogenous mixed-layer occurs in the first ~100 m, followed by a steep decrease in each profile at the thermocline/halocline.\nConvection is dominated by the stratified salinity (steady gradient followed by abrupt halocline), whereas temperature is homogenous until the thermocline.\
@@ -208,13 +211,13 @@ u10 = 10    # m/s wind speed at 10m
 u   = 0     # m/s current speed in Ocean surf
 T10 = 18    # C temp at 10m
 T   = 20    # C temp at Ocean surf (note units can be K since difference is taken)
-Ch  = 10e-3 #  sepecific heat of seawater
+Ch  = 1e-3 # sepecific heat of seawater
 CpA = 1030  # J kg-1 K-1 specific heat of air
 pA  = 1.3   # kg m-3 density of air
 
 # Calcluate sensible heat w/ units: J m-2 s-1 = W m-2
 Qs = pA*CpA*Ch*abs(u10-u)*(T10-T)
-
+#note negative flux means heat goes into the ocean...?
 # Params
 h   = 50    # m MLD
 rho0= 1027  # kg m-3 density of seawater
@@ -229,26 +232,98 @@ T10 = 18
 T   = 20
 day = 0
 Tp  = T-T10 # C sea-air temperature gradient
-TpList = np.zeros(23)
+TpList = np.zeros(118)
 TpList[0] = Tp # List of sea-air temperature gradient for plotting...
-
-while(Tp > .01):
+Tlist =np.zeros(118)
+dTlist = np.zeros(118)
+days= np.zeros(118)
+for i in range(118):
+    days[i]=i+1
+while(Tp > .15):
     Qs = pA*CpA*Ch*abs(u10-u)*(T10-T) 
     dT = (Qs/(h*CpA*rho0))*s2d
     T = T+dT
     Tp = T-T10
-    print "day",day,":\nthe heat flux is",dT,"degrees/day \nthe temp gradient is",Tp
-    TpList[day] = T-T10  #book-keeping...  
+    print "day",day,":\nthe heat flux is",round(dT,3),"degrees/day \nthe temp gradient is",round(Tp,3)
+    #book-keeping...      
+    TpList[day] = T-T10
+    Tlist[day] = T
+    dTlist[day]=dT
     day=day+1
+plt.scatter(days,TpList)
+#plt.plot(Tlist,TpList)
+#plt.xlim(18,19.5)
+#plt.ylim(0,1.5)
+plt.title("Time evolution of the air-sea T diff")
+plt.ylabel('change in temp (C)')
+plt.xlabel('days')
+plt.show()
+plt.scatter(TpList,dTlist)
+plt.title("In-situ ROC vs T gradient")
+plt.ylabel('ROC temp (C/sec)')
+plt.xlabel('in-situ vs T10 gradient (C) ')
+plt.show()
+
+
+# for linear regression
+#par = np.polyfit(Tlist, TpList, 1, full=True)
+#m=par[0][0]     # SLOPE
+#b=par[0][1]     # Y-INTERCEPT
+#equation=str(round(m,2))+"x "+str(round(b,1)) 
 
 """
-assuming that wind and current velocity remain uncahnged, the temperature gradient
+assuming that wind and current velocity remain unchanged, the temperature gradient
 becomes weaker day-by-day as the heat flux is dependent on the senible heat, which
 is a function of the temperature gradient.
 
 The cooling rate is positively coorelated to the temperature gradient.
+
+lambda is equalt to (T-dT) - T10 which is tied to velocity and temp gradients between the sea and air.
 """
 
 """****************************************************************************
 5) Evaporation and Latent Heat Flux
 ****************************************************************************"""
+#print"5.1 What is qsat, the specific humidity of the right at the sea surface? 
+#(The water temperature is 20C, and the air right at the surface is always 100% saturated.)"
+import math
+T = 20+273
+# Calculating (saturated) specific humidity same B/C rel Hum = 100%
+qsat0 = 0.98*((6.4e5/pA))*math.exp((-5107.4)/T)
+print qsat0
+
+#5.2 Assume that the air in the cold front has 50% relative humidity at 10 m above the sea surface. What is q10? (Recall that T10=18C.)
+T10 = 18+273
+# Calculating specific humidity
+qsat10 = 0.98*((6.4e5/pA))*math.exp((-5107.4)/T10)
+# Calculating specific humidity at 50% relative humidity
+q10 = qsat10/.50 #unitless or g/
+
+#print"5.3 Calculate the evaporation rate immediately after the drop in air temperature.\
+# What are the units of E? \
+# Rainfall is often measured in units of mm per day. Can you convert your answer to these units?"
+cE = Ch # exchange coefficient for water vapor
+# calculate evaporation rate 
+E   = -pA*cE*abs(u10-u)*(q10-qsat0)
+Emm = E*s2d # convert to mm/day
+#print"5.4 Calculate the instantaneous rate of change of the mixed layer salinity \
+#due to evaporation immediately after the drop in air temperature"
+SA0 = 35.0  # g/kg  average salinity of the mixed layer
+P   = 0     # kg / m2 s percipitation flux
+R   = 0     # kg / m2 s runoff flux
+
+# Calculate instantaneous rate of change of MLS units: 
+F=(E-P-R)*(SA0/(rho0*(1-SA0)))
+
+
+print"5.5 Calculate the latent heat flux corresponding with this evaporation rate."
+Le  = 2.5e6 # J / kg latent heat of vaporization
+# Calculate latent heat flux units: J / m^2 s = W / m^2
+Qlh = -Le*E
+
+
+print"5.6 Water evaporates on the ocean surface, but percipitates downards at at higher altitutes\
+with lower temperatures and saturation specific humidities. This evaporation releases latent heat,\
+so Le is always negative when calculating latent heat flux."
+
+# 6 Desnity flux rho(S,T,P) ~ rho(S,T)
